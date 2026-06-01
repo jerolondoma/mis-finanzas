@@ -289,25 +289,14 @@ let driveConnected=false,driveFileId=null,tokenClient=null;
 let modalPendingCatId=null,modalPendingSubId=null;
 
 let data={
-  ingreso:1600000,
-  gastosFijos:[{id:1,nombre:'Gasolina moto',valor:0}],
+  ingreso:0,
+  gastosFijos:[],
   categorias:[
     {id:1,nombre:'Ocio',emoji:'🎉',pct:10,tipo:'ocio',subcategorias:[]},
-    {id:2,nombre:'Imprevistos',emoji:'🛡️',pct:10,tipo:'acumula',subcategorias:[
-      {id:21,nombre:'SOAT',meta:1100000,acumulado:0},
-      {id:22,nombre:'Emergencias',meta:500000,acumulado:0}
-    ]},
-    {id:3,nombre:'Viaje',emoji:'✈️',pct:10,tipo:'acumula',subcategorias:[
-      {id:31,nombre:'Fondo viaje',meta:10000000,acumulado:0}
-    ]},
-    {id:4,nombre:'Inversión',emoji:'📈',pct:60,tipo:'acumula',subcategorias:[
-      {id:41,nombre:'Ternero / ganado',meta:1100000,acumulado:0},
-      {id:42,nombre:'Curso Python',meta:300000,acumulado:0},
-      {id:43,nombre:'Anuncios Facebook',meta:200000,acumulado:0}
-    ]},
-    {id:5,nombre:'Deudas',emoji:'💳',pct:10,tipo:'acumula',subcategorias:[
-      {id:51,nombre:'Deuda principal',meta:2000000,acumulado:0}
-    ]}
+    {id:2,nombre:'Imprevistos',emoji:'🛡️',pct:10,tipo:'acumula',subcategorias:[]},
+    {id:3,nombre:'Viaje',emoji:'✈️',pct:10,tipo:'acumula',subcategorias:[]},
+    {id:4,nombre:'Inversión',emoji:'📈',pct:60,tipo:'acumula',subcategorias:[]},
+    {id:5,nombre:'Deudas',emoji:'💳',pct:10,tipo:'acumula',subcategorias:[]}
   ],
   movimientos:[],
   quincenas:[],
