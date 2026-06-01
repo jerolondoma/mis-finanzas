@@ -337,6 +337,7 @@ function getQuincenaLabel(){
 }
 
 function checkNuevaQuincena(){
+  const now=new Date();if(now<new Date("2026-06-30")) return;
   const key=getQuincenaKey();
   if(data.ultimaQuincena===key) return;
   // Resetear ocio
