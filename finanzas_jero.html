@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mis Finanzas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://apis.google.com/js/api.js"></script>
+<style>
+  :root {
+    --bg: #f5f3ee;
+    --surface: #ffffff;
+    --surface2: #f0ede6;
+    --border: #e2ddd4;
+    --text: #1a1917;
+    --text2: #6b6760;
+    --text3: #9e9b96;
+    --green: #2d6a4f;
+    --green-bg: #d8f3dc;
+    --red: #9b2226;
+    --red-bg: #fde8e8;
+    --amber: #7d4e0f;
+    --amber-bg: #fef3cd;
+    --blue: #1d4e89;
+    --blue-bg: #dbeafe;
+    --accent: #3a5a40;
+    --accent-light: #d8f3dc;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+  .app { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-weight: 600; font-size: 20px; letter-spacing: -0.5px; }
+  .logo span { color: var(--accent); }
+  .drive-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; color: var(--text2); transition: all 0.15s;
+  }
+  .drive-btn:hover { background: var(--surface2); color: var(--text); }
+  .drive-btn.connected { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .drive-icon { width: 18px; height: 18px; }
+
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 1.5rem;
+    background: var(--surface2); border-radius: var(--radius);
+    padding: 4px;
+  }
+  .tab {
+    flex: 1; padding: 8px; border-radius: var(--radius-sm);
+    border: none; background: transparent; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500; cursor: pointer; color: var(--text2);
+    transition: all 0.15s;
+  }
+  .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  .card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 1rem;
+  }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .summary-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 1rem 1.25rem;
+  }
+  .summary-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+  .summary-value { font-size: 22px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .summary-value.green { color: var(--green); }
+  .summary-value.red { color: var(--red); }
+  .summary-value.blue { color: var(--blue); }
+
+  .field-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .field-label { font-size: 13px; color: var(--text2); min-width: 140px; }
+  input[type="number"], input[type="text"] {
+    flex: 1; padding: 8px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface2);
+    font-family: 'DM Mono', monospace; font-size: 14px; color: var(--text);
+    outline: none; transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--accent); background: var(--surface); }
+  input[type="range"] {
+    flex: 1; accent-color: var(--accent);
+  }
+  .range-val {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--accent); font-weight: 500; min-width: 40px; text-align: right;
+  }
+
+  .category-block {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .category-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; background: var(--surface2);
+    cursor: pointer; user-select: none;
+  }
+  .cat-emoji { font-size: 16px; }
+  .cat-name { font-weight: 500; font-size: 14px; flex: 1; }
+  .cat-pct {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--accent); font-weight: 500;
+  }
+  .cat-amount {
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3);
+  }
+  .cat-body { padding: 12px 14px; display: none; }
+  .cat-body.open { display: block; }
+
+  .subcategory-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+  }
+  .subcategory-row:last-child { border-bottom: none; }
+  .sub-name { font-size: 13px; flex: 1; color: var(--text2); }
+  .sub-amount { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); }
+  .sub-meta { font-size: 11px; color: var(--text3); }
+  .sub-pct-input {
+    width: 60px; padding: 4px 8px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    text-align: center;
+  }
+
+  .btn {
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; color: var(--text2); transition: all 0.15s;
+  }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary {
+    background: var(--accent); color: white; border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #2d4a32; }
+  .btn-danger { color: var(--red); border-color: transparent; background: transparent; font-size: 12px; padding: 4px 8px; }
+  .btn-danger:hover { background: var(--red-bg); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  .add-row { display: flex; gap: 8px; margin-top: 10px; }
+  .add-row input { flex: 1; }
+
+  .progress-bar {
+    height: 6px; background: var(--surface2); border-radius: 99px;
+    overflow: hidden; margin-top: 6px;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent); border-radius: 99px;
+    transition: width 0.3s;
+  }
+  .pct-warning { color: var(--red); font-size: 12px; margin-top: 6px; }
+  .pct-ok { color: var(--green); font-size: 12px; margin-top: 6px; }
+
+  .goal-card {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 14px; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .goal-info { flex: 1; }
+  .goal-name { font-size: 14px; font-weight: 500; }
+  .goal-detail { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .goal-months { font-size: 13px; color: var(--accent); font-weight: 500; white-space: nowrap; }
+
+  .movimiento-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .movimiento-row:last-child { border-bottom: none; }
+  .mov-fecha { color: var(--text3); font-family: 'DM Mono', monospace; font-size: 12px; min-width: 80px; }
+  .mov-desc { flex: 1; }
+  .mov-cat { font-size: 11px; color: var(--text3); background: var(--surface2); padding: 2px 6px; border-radius: 4px; }
+  .mov-monto { font-family: 'DM Mono', monospace; font-weight: 500; }
+  .mov-monto.ingreso { color: var(--green); }
+  .mov-monto.gasto { color: var(--red); }
+
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+  .tag-green { background: var(--green-bg); color: var(--green); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber); }
+  .tag-red { background: var(--red-bg); color: var(--red); }
+
+  .section-sep { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+
+  .save-bar {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .save-status { font-size: 12px; color: var(--text3); }
+
+  @media (max-width: 600px) {
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .field-label { min-width: 100px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">Mis <span>Finanzas</span></div>
+    <button class="drive-btn" id="driveBtn" onclick="toggleDrive()">
+      <svg class="drive-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M8.5 3L3 12.5L8.5 21H15.5L21 12.5L15.5 3H8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M3 12.5H21M8.5 21L12 12.5L15.5 3M8.5 3L12 12.5L15.5 21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <span id="driveBtnText">Conectar Google Drive</span>
+    </button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('resumen')">Resumen</button>
+    <button class="tab" onclick="showTab('configurar')">Configurar</button>
+    <button class="tab" onclick="showTab('metas')">Metas</button>
+    <button class="tab" onclick="showTab('movimientos')">Movimientos</button>
+  </div>
+
+  <div id="tab-resumen">
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Ingreso mensual</div>
+        <div class="summary-value green" id="sum-ingreso">$0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Gastos fijos</div>
+        <div class="summary-value red" id="sum-fijos">$0</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Disponible</div>
+        <div class="summary-value blue" id="sum-disponible">$0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Distribución mensual</div>
+      <div id="resumen-categorias"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Registrar movimiento</div>
+      <div class="field-row">
+        <span class="field-label">Descripción</span>
+        <input type="text" id="mov-desc" placeholder="ej: gasolina moto">
+      </div>
+      <div class="field-row">
+        <span class="field-label">Monto ($)</span>
+        <input type="number" id="mov-monto" placeholder="0">
+      </div>
+      <div class="field-row">
+        <span class="field-label">Categoría</span>
+        <select id="mov-cat" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); outline:none;">
+        </select>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Tipo</span>
+        <select id="mov-tipo" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); outline:none;">
+          <option value="gasto">Gasto / retiro</option>
+          <option value="ingreso">Ingreso / retorno de inversión</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn btn-primary" onclick="registrarMovimiento()">Registrar</button>
+        <button class="btn btn-sm" onclick="showTab('movimientos')">Ver historial</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-configurar" style="display:none">
+    <div class="card">
+      <div class="card-title">Ingreso y gastos fijos</div>
+      <div class="field-row">
+        <span class="field-label">Ingreso mensual</span>
+        <input type="number" id="ingreso" placeholder="0" oninput="recalcular()">
+      </div>
+      <hr class="section-sep">
+      <div id="gastos-fijos-list"></div>
+      <div class="add-row">
+        <input type="text" id="gf-nombre" placeholder="Nombre gasto fijo (ej: gasolina)">
+        <input type="number" id="gf-valor" placeholder="$ monto" style="max-width:130px">
+        <button class="btn btn-sm btn-primary" onclick="agregarGastoFijo()">+ Agregar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Categorías y porcentajes</div>
+      <p style="font-size:13px; color:var(--text3); margin-bottom:1rem;">El porcentaje se aplica sobre el dinero disponible después de gastos fijos.</p>
+      <div id="categorias-config"></div>
+      <div id="pct-status"></div>
+      <hr class="section-sep">
+      <div class="add-row">
+        <input type="text" id="nueva-cat-nombre" placeholder="Nueva categoría (ej: educación)">
+        <input type="text" id="nueva-cat-emoji" placeholder="Emoji" style="max-width:70px">
+        <button class="btn btn-sm btn-primary" onclick="agregarCategoria()">+ Agregar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-metas" style="display:none">
+    <div class="card">
+      <div class="card-title">Proyección de metas</div>
+      <p style="font-size:13px; color:var(--text3); margin-bottom:1rem;">Configurá una meta para cada subcategoría de inversión o ahorro.</p>
+      <div id="metas-list"></div>
+    </div>
+  </div>
+
+  <div id="tab-movimientos" style="display:none">
+    <div class="card">
+      <div class="card-title">Historial de movimientos</div>
+      <div id="movimientos-list"></div>
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button class="btn btn-sm" style="color:var(--red)" onclick="limpiarMovimientos()">Limpiar historial</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-bar">
+    <span class="save-status" id="save-status"></span>
+    <button class="btn btn-sm" onclick="guardarDatos()">Guardar</button>
+  </div>
+</div>
+
+<script>
+const CLIENT_ID = '722358843400-8rt5rs0l3fck52frg2s039rsvsuddin9.apps.googleusercontent.com';
+const API_KEY = 'AIzaSyBXBAPCcNQfQeCeWAlsBogO753txYODi6Q';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const FILE_NAME = 'mis_finanzas_data.json';
+
+let driveConnected = false;
+let driveFileId = null;
+let tokenClient = null;
+
+let data = {
+  ingreso: 0,
+  gastosFijos: [
+    { id: 1, nombre: 'Gasolina moto', valor: 0 }
+  ],
+  categorias: [
+    { id: 1, nombre: 'Ocio', emoji: '🎉', pct: 10, subcategorias: [] },
+    { id: 2, nombre: 'Imprevistos', emoji: '🛡️', pct: 10, subcategorias: [
+      { id: 21, nombre: 'SOAT', meta: 1100000, acumulado: 0 },
+      { id: 22, nombre: 'Emergencias', meta: 500000, acumulado: 0 }
+    ]},
+    { id: 3, nombre: 'Viaje', emoji: '✈️', pct: 10, subcategorias: [
+      { id: 31, nombre: 'Fondo viaje', meta: 2000000, acumulado: 0 }
+    ]},
+    { id: 4, nombre: 'Inversión', emoji: '📈', pct: 60, subcategorias: [
+      { id: 41, nombre: 'Ternero / ganado', meta: 1100000, acumulado: 0 },
+      { id: 42, nombre: 'Curso Python', meta: 300000, acumulado: 0 },
+      { id: 43, nombre: 'Anuncios Facebook', meta: 200000, acumulado: 0 }
+    ]},
+    { id: 5, nombre: 'Deudas', emoji: '💳', pct: 10, subcategorias: [] }
+  ],
+  movimientos: []
+};
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('es-CO');
+}
+
+function disponible() {
+  const totalFijos = data.gastosFijos.reduce((s, g) => s + (g.valor || 0), 0);
+  return Math.max(0, (data.ingreso || 0) - totalFijos);
+}
+
+function totalPct() {
+  return data.categorias.reduce((s, c) => s + (c.pct || 0), 0);
+}
+
+function recalcular() {
+  data.ingreso = parseFloat(document.getElementById('ingreso').value) || 0;
+  renderResumen();
+  renderMetasList();
+  actualizarMovSelect();
+  setSaveStatus('Sin guardar');
+}
+
+function renderResumen() {
+  const disp = disponible();
+  const fijos = data.gastosFijos.reduce((s, g) => s + (g.valor || 0), 0);
+  document.getElementById('sum-ingreso').textContent = fmt(data.ingreso);
+  document.getElementById('sum-fijos').textContent = fmt(fijos);
+  document.getElementById('sum-disponible').textContent = fmt(disp);
+
+  const cont = document.getElementById('resumen-categorias');
+  cont.innerHTML = '';
+  data.categorias.forEach(cat => {
+    const monto = disp * (cat.pct / 100);
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)';
+    div.innerHTML = `
+      <span style="font-size:18px">${cat.emoji}</span>
+      <span style="flex:1;font-size:14px;font-weight:500">${cat.nombre}</span>
+      <span style="font-family:DM Mono,monospace;font-size:13px;color:var(--text3)">${cat.pct}%</span>
+      <span style="font-family:DM Mono,monospace;font-size:14px;font-weight:500">${fmt(monto)}</span>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function renderGastosFijos() {
+  const cont = document.getElementById('gastos-fijos-list');
+  cont.innerHTML = '';
+  data.gastosFijos.forEach(g => {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.innerHTML = `
+      <span class="field-label">${g.nombre}</span>
+      <input type="number" value="${g.valor}" placeholder="0" oninput="updateGastoFijo(${g.id}, this.value)" style="flex:1">
+      <button class="btn btn-danger" onclick="eliminarGastoFijo(${g.id})">✕</button>
+    `;
+    cont.appendChild(row);
+  });
+}
+
+function updateGastoFijo(id, val) {
+  const g = data.gastosFijos.find(x => x.id === id);
+  if (g) g.valor = parseFloat(val) || 0;
+  recalcular();
+  setSaveStatus('Sin guardar');
+}
+
+function eliminarGastoFijo(id) {
+  data.gastosFijos = data.gastosFijos.filter(x => x.id !== id);
+  renderGastosFijos();
+  recalcular();
+  setSaveStatus('Sin guardar');
+}
+
+function agregarGastoFijo() {
+  const nombre = document.getElementById('gf-nombre').value.trim();
+  const valor = parseFloat(document.getElementById('gf-valor').value) || 0;
+  if (!nombre) return;
+  data.gastosFijos.push({ id: Date.now(), nombre, valor });
+  document.getElementById('gf-nombre').value = '';
+  document.getElementById('gf-valor').value = '';
+  renderGastosFijos();
+  recalcular();
+  setSaveStatus('Sin guardar');
+}
+
+function renderCategoriasConfig() {
+  const cont = document.getElementById('categorias-config');
+  cont.innerHTML = '';
+  const disp = disponible();
+
+  data.categorias.forEach(cat => {
+    const monto = disp * (cat.pct / 100);
+    const block = document.createElement('div');
+    block.className = 'category-block';
+
+    let subsHtml = '';
+    cat.subcategorias.forEach(sub => {
+      subsHtml += `
+        <div class="subcategory-row">
+          <span class="sub-name">${sub.nombre}</span>
+          <span class="sub-amount">${fmt(monto / Math.max(1, cat.subcategorias.length))}</span>
+          <button class="btn btn-danger" onclick="eliminarSub(${cat.id},${sub.id})">✕</button>
+        </div>`;
+    });
+
+    block.innerHTML = `
+      <div class="category-header" onclick="toggleCat(${cat.id})">
+        <span class="cat-emoji">${cat.emoji}</span>
+        <span class="cat-name">${cat.nombre}</span>
+        <span class="cat-pct">${cat.pct}%</span>
+        <button class="btn btn-danger" onclick="event.stopPropagation();eliminarCategoria(${cat.id})">✕</button>
+      </div>
+      <div class="cat-body" id="catbody-${cat.id}">
+        <div class="field-row" style="margin-bottom:10px">
+          <span class="field-label" style="font-size:13px">Porcentaje</span>
+          <input type="range" min="0" max="100" step="1" value="${cat.pct}" oninput="updatePct(${cat.id},this.value);this.nextElementSibling.textContent=this.value+'%'">
+          <span class="range-val">${cat.pct}%</span>
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:8px">→ ${fmt(monto)}/mes</div>
+        ${subsHtml}
+        <div class="add-row" style="margin-top:8px">
+          <input type="text" id="sub-nombre-${cat.id}" placeholder="Nueva subcategoría">
+          <input type="number" id="sub-meta-${cat.id}" placeholder="Meta ($)" style="max-width:120px">
+          <button class="btn btn-sm" onclick="agregarSub(${cat.id})">+ Sub</button>
+        </div>
+      </div>`;
+    cont.appendChild(block);
+  });
+
+  renderPctStatus();
+}
+
+function toggleCat(id) {
+  const body = document.getElementById('catbody-' + id);
+  body.classList.toggle('open');
+}
+
+function updatePct(id, val) {
+  const cat = data.categorias.find(c => c.id === id);
+  if (cat) cat.pct = parseInt(val) || 0;
+  renderPctStatus();
+  renderResumen();
+  renderMetasList();
+  setSaveStatus('Sin guardar');
+}
+
+function renderPctStatus() {
+  const total = totalPct();
+  const el = document.getElementById('pct-status');
+  if (total === 100) {
+    el.innerHTML = `<p class="pct-ok">✓ Los porcentajes suman 100%</p>`;
+  } else {
+    el.innerHTML = `<p class="pct-warning">⚠ Los porcentajes suman ${total}% (deben sumar 100%)</p>`;
+  }
+}
+
+function eliminarCategoria(id) {
+  if (!confirm('¿Eliminar esta categoría?')) return;
+  data.categorias = data.categorias.filter(c => c.id !== id);
+  renderCategoriasConfig();
+  renderResumen();
+  setSaveStatus('Sin guardar');
+}
+
+function agregarCategoria() {
+  const nombre = document.getElementById('nueva-cat-nombre').value.trim();
+  const emoji = document.getElementById('nueva-cat-emoji').value.trim() || '📂';
+  if (!nombre) return;
+  data.categorias.push({ id: Date.now(), nombre, emoji, pct: 0, subcategorias: [] });
+  document.getElementById('nueva-cat-nombre').value = '';
+  document.getElementById('nueva-cat-emoji').value = '';
+  renderCategoriasConfig();
+  renderResumen();
+  setSaveStatus('Sin guardar');
+}
+
+function agregarSub(catId) {
+  const nombre = document.getElementById('sub-nombre-' + catId).value.trim();
+  const meta = parseFloat(document.getElementById('sub-meta-' + catId).value) || 0;
+  if (!nombre) return;
+  const cat = data.categorias.find(c => c.id === catId);
+  if (cat) cat.subcategorias.push({ id: Date.now(), nombre, meta, acumulado: 0 });
+  document.getElementById('sub-nombre-' + catId).value = '';
+  document.getElementById('sub-meta-' + catId).value = '';
+  renderCategoriasConfig();
+  renderMetasList();
+  setSaveStatus('Sin guardar');
+}
+
+function eliminarSub(catId, subId) {
+  const cat = data.categorias.find(c => c.id === catId);
+  if (cat) cat.subcategorias = cat.subcategorias.filter(s => s.id !== subId);
+  renderCategoriasConfig();
+  renderMetasList();
+  setSaveStatus('Sin guardar');
+}
+
+function renderMetasList() {
+  const cont = document.getElementById('metas-list');
+  cont.innerHTML = '';
+  const disp = disponible();
+  let hayMetas = false;
+
+  data.categorias.forEach(cat => {
+    const montoMensual = disp * (cat.pct / 100);
+    cat.subcategorias.forEach(sub => {
+      if (!sub.meta || sub.meta === 0) return;
+      hayMetas = true;
+      const mensualSub = montoMensual / Math.max(1, cat.subcategorias.length);
+      const restante = Math.max(0, sub.meta - (sub.acumulado || 0));
+      const meses = mensualSub > 0 ? Math.ceil(restante / mensualSub) : null;
+      const pct = sub.meta > 0 ? Math.min(100, Math.round(((sub.acumulado || 0) / sub.meta) * 100)) : 0;
+
+      const card = document.createElement('div');
+      card.className = 'goal-card';
+      card.innerHTML = `
+        <div style="font-size:20px">${cat.emoji}</div>
+        <div class="goal-info">
+          <div class="goal-name">${sub.nombre}</div>
+          <div class="goal-detail">${fmt(sub.acumulado || 0)} / ${fmt(sub.meta)} — ${fmt(mensualSub)}/mes</div>
+          <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="goal-months">${meses !== null ? meses + ' meses' : '—'}</div>
+      `;
+      cont.appendChild(card);
+    });
+  });
+
+  if (!hayMetas) {
+    cont.innerHTML = '<p style="font-size:13px;color:var(--text3)">Agregá subcategorías con meta en la pestaña Configurar.</p>';
+  }
+}
+
+function actualizarMovSelect() {
+  const sel = document.getElementById('mov-cat');
+  sel.innerHTML = '';
+  data.categorias.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat.id;
+    opt.textContent = cat.emoji + ' ' + cat.nombre;
+    sel.appendChild(opt);
+  });
+}
+
+function registrarMovimiento() {
+  const desc = document.getElementById('mov-desc').value.trim();
+  const monto = parseFloat(document.getElementById('mov-monto').value) || 0;
+  const catId = parseInt(document.getElementById('mov-cat').value);
+  const tipo = document.getElementById('mov-tipo').value;
+  if (!desc || !monto) return;
+
+  const cat = data.categorias.find(c => c.id === catId);
+  data.movimientos.unshift({
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString('es-CO'),
+    desc, monto, catId,
+    catNombre: cat ? cat.nombre : '',
+    catEmoji: cat ? cat.emoji : '',
+    tipo
+  });
+
+  document.getElementById('mov-desc').value = '';
+  document.getElementById('mov-monto').value = '';
+  renderMovimientos();
+  setSaveStatus('Sin guardar');
+  alert('Movimiento registrado ✓');
+}
+
+function renderMovimientos() {
+  const cont = document.getElementById('movimientos-list');
+  if (!data.movimientos.length) {
+    cont.innerHTML = '<p style="font-size:13px;color:var(--text3)">Sin movimientos aún.</p>';
+    return;
+  }
+  cont.innerHTML = '';
+  data.movimientos.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'movimiento-row';
+    row.innerHTML = `
+      <span class="mov-fecha">${m.fecha}</span>
+      <span class="mov-desc">${m.desc} <span class="mov-cat">${m.catEmoji} ${m.catNombre}</span></span>
+      <span class="mov-monto ${m.tipo}">${m.tipo === 'ingreso' ? '+' : '-'}${fmt(m.monto)}</span>
+      <button class="btn btn-danger" onclick="eliminarMovimiento(${m.id})">✕</button>
+    `;
+    cont.appendChild(row);
+  });
+}
+
+function eliminarMovimiento(id) {
+  data.movimientos = data.movimientos.filter(m => m.id !== id);
+  renderMovimientos();
+  setSaveStatus('Sin guardar');
+}
+
+function limpiarMovimientos() {
+  if (!confirm('¿Borrar todo el historial?')) return;
+  data.movimientos = [];
+  renderMovimientos();
+  setSaveStatus('Sin guardar');
+}
+
+function showTab(name) {
+  ['resumen','configurar','metas','movimientos'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((btn, i) => {
+    btn.classList.toggle('active', ['resumen','configurar','metas','movimientos'][i] === name);
+  });
+  if (name === 'configurar') {
+    renderGastosFijos();
+    renderCategoriasConfig();
+    document.getElementById('ingreso').value = data.ingreso || '';
+  }
+  if (name === 'movimientos') renderMovimientos();
+  if (name === 'metas') renderMetasList();
+}
+
+function setSaveStatus(msg) {
+  document.getElementById('save-status').textContent = msg;
+}
+
+function guardarDatos() {
+  localStorage.setItem('finanzas_data', JSON.stringify(data));
+  setSaveStatus('Guardado localmente ✓');
+  if (driveConnected) guardarEnDrive();
+}
+
+function cargarDatos() {
+  const raw = localStorage.getItem('finanzas_data');
+  if (raw) {
+    try { data = JSON.parse(raw); } catch(e) {}
+  }
+  renderResumen();
+  actualizarMovSelect();
+}
+
+function toggleDrive() {
+  if (driveConnected) {
+    driveConnected = false;
+    document.getElementById('driveBtn').classList.remove('connected');
+    document.getElementById('driveBtnText').textContent = 'Conectar Google Drive';
+    setSaveStatus('Drive desconectado');
+  } else {
+    initDrive();
+  }
+}
+
+function initDrive() {
+  gapi.load('client', async () => {
+    try {
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+      });
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: async (resp) => {
+          if (resp.error) { alert('Error al conectar con Google Drive'); return; }
+          driveConnected = true;
+          document.getElementById('driveBtn').classList.add('connected');
+          document.getElementById('driveBtnText').textContent = 'Drive conectado ✓';
+          setSaveStatus('Conectado a Drive');
+          await cargarDesdeDrive();
+        }
+      });
+      tokenClient.requestAccessToken();
+    } catch(e) {
+      mostrarInstruccionesDrive();
+    }
+  });
+}
+
+async function buscarArchivoDrive() {
+  const res = await gapi.client.drive.files.list({
+    spaces: 'appDataFolder',
+    q: `name='${FILE_NAME}'`,
+    fields: 'files(id,name)'
+  });
+  return res.result.files?.[0]?.id || null;
+}
+
+async function cargarDesdeDrive() {
+  try {
+    driveFileId = await buscarArchivoDrive();
+    if (!driveFileId) { setSaveStatus('Sin datos en Drive aún'); return; }
+    const res = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+    data = JSON.parse(res.body);
+    renderResumen();
+    renderMovimientos();
+    actualizarMovSelect();
+    setSaveStatus('Datos cargados desde Drive ✓');
+  } catch(e) {
+    setSaveStatus('Error cargando Drive');
+  }
+}
+
+async function guardarEnDrive() {
+  try {
+    const content = JSON.stringify(data);
+    const blob = new Blob([content], { type: 'application/json' });
+    if (!driveFileId) {
+      const meta = { name: FILE_NAME, parents: ['appDataFolder'] };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+      form.append('file', blob);
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + gapi.client.getToken().access_token },
+        body: form
+      });
+      const json = await res.json();
+      driveFileId = json.id;
+    } else {
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: 'Bearer ' + gapi.client.getToken().access_token,
+          'Content-Type': 'application/json'
+        },
+        body: content
+      });
+    }
+    setSaveStatus('Guardado en Drive ✓');
+  } catch(e) {
+    setSaveStatus('Error guardando en Drive');
+  }
+}
+
+function mostrarInstruccionesDrive() {
+  alert('Para activar Google Drive necesitás configurar las credenciales de Google API. Consultá las instrucciones incluidas en el archivo HTML o usá el guardado local por ahora.');
+}
+
+cargarDatos();
+</script>
+<script src="https://accounts.google.com/gsi/client" async></script>
+</body>
+</html>
